@@ -1,0 +1,28 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.16.1'
+}
+
+version = '1.0.0'
+group = 'com.hellfiregas'
+
+base {
+    archivesName = 'HellfireGas'
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url = 'https://maven.fabricmc.net/'
+    }
+}
+
+dependencies {
+    minecraft 'com.mojang:minecraft:26.1.2'
+    implementation 'net.fabricmc:fabric-loader:0.18.5'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
