@@ -39,5 +39,8 @@ public class ModItems {
     public static void initialize() {
         CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.COMBAT)
             .register(entries -> entries.accept(CHAINSAW));
+
+        CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.INGREDIENTS)
+            .register(entries -> entries.accept(CHAINSAW));
     }
-                          }
+}
