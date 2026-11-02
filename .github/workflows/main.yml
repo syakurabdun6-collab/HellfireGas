@@ -1,3 +1,4 @@
+
 name: Build Hellfire Gas
 
 on:
@@ -28,8 +29,14 @@ jobs:
       - name: Build mod
         run: gradle build --no-daemon
 
+      - name: Check JAR
+        run: |
+          echo "Checking generated JAR files..."
+          find . -type f -path '*/build/libs/*.jar'
+
       - name: Upload JAR
         uses: actions/upload-artifact@v4
         with:
           name: HellfireGas-JAR
-          path: build/libs/*.jar
+          path: '**/build/libs/*.jar'
+          if-no-files-found: error
