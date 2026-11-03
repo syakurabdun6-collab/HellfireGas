@@ -13,9 +13,25 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+
+      - name: Extract src.zip
+        run: |
+          if [ -f src.zip ]; then
+            unzip -o src.zip -d .
+          else
+            echo "src.zip tidak ditemukan!"
+            exit 1
+          fi
+
+          if [ ! -d src ]; then
+            echo "Folder src tidak ditemukan setelah ekstraksi."
+            echo "Periksa struktur isi src.zip."
+            exit 1
+          fi
 
       - name: Set up Java 25
         uses: actions/setup-java@v4
