@@ -1,21 +1,20 @@
-name: Build Hellfire Gas
+name: Build HellfireGas
 
 on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+    branches: ["main", "master"]
   workflow_dispatch:
 
 permissions:
-  contents: write
-
-concurrency:
-  group: hellfiregas-version
-  cancel-in-progress: false
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
+      - name: Checkout source
         uses: actions/checkout@v4
 
       - name: Set up Java 25
@@ -24,83 +23,18 @@ jobs:
           distribution: temurin
           java-version: '25'
 
-      - name: Set up Gradle
+      - name: Set up Gradle 9.1.0
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '9.4.1'
-
-      - name: Extract source
-        run: unzip -o src.zip -d .
-
-      - name: Increase version
-        id: version
-        run: |
-          python3 - <<'PY'
-          import re
-          from pathlib import Path
-
-          version_file = Path("VERSION")
-          gradle_file = Path("build.gradle")
-
-          if version_file.exists():
-              version = version_file.read_text().strip()
-          else:
-              content = gradle_file.read_text()
-              match = re.search(r"version\s*=\s*['\"](\d+\.\d+\.\d+)['\"]", content)
-              if not match:
-                  raise SystemExit("Versi tidak ditemukan di build.gradle")
-              version = match.group(1)
-
-          major, minor, patch = map(int, version.split("."))
-          new_version = f"{major}.{minor}.{patch + 1}"
-
-          content = gradle_file.read_text()
-          content, count = re.subn(
-              r"version\s*=\s*['\"]\d+\.\d+\.\d+['\"]",
-              f"version = '{new_version}'",
-              content,
-              count=1
-          )
-
-          if count != 1:
-              raise SystemExit("Gagal memperbarui versi build.gradle")
-
-          gradle_file.write_text(content)
-          version_file.write_text(new_version + "\n")
-
-          with open("version.txt", "w") as f:
-              f.write(new_version)
-
-          print(f"Versi baru: {new_version}")
-          with open(__import__("os").environ["GITHUB_OUTPUT"], "a") as f:
-              f.write(f"version={new_version}\n")
-          PY
-
-      - name: Save version to GitHub
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add VERSION
-
-          if git diff --cached --quiet; then
-            echo "Tidak ada perubahan versi"
-          else
-            git commit -m "Update version to $(cat VERSION)"
-            git push origin HEAD:${GITHUB_REF_NAME}
-          fi
+          gradle-version: '9.1.0'
 
       - name: Build mod
-        run: gradle build --no-daemon
+        run: gradle --no-daemon clean build
 
-      - name: Check JAR
-        run: |
-          echo "Checking generated JAR files..."
-          find . -type f -path '*/build/libs/*.jar'
-
-      - name: Upload JAR
+      - name: Upload mod JAR
         uses: actions/upload-artifact@v4
         with:
-          name: HellfireGas-${{ steps.version.outputs.version }}
-          path: '**/build/libs/*.jar'
+          name: HellfireGas-${{ github.sha }}
+          path: build/libs/*.jar
           if-no-files-found: error
+          retention-days: 14
