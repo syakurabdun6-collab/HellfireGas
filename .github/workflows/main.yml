@@ -23,7 +23,7 @@ jobs:
           distribution: temurin
           java-version: '25'
 
-      - name: Set up Gradle 9.4.1
+      - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.4.1'
@@ -31,10 +31,14 @@ jobs:
       - name: Build mod
         run: gradle --no-daemon clean build
 
+      - name: Read Version
+        id: version
+        run: echo "version=$(cat VERSION)" >> "$GITHUB_OUTPUT"
+
       - name: Upload mod JAR
         uses: actions/upload-artifact@v4
         with:
-          name: HellfireGas-${{ github.sha }}
+          name: HellfireGas-${{ steps.version.outputs.version }}
           path: build/libs/*.jar
           if-no-files-found: error
           retention-days: 14
